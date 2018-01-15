@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+
+  <!-- <script src="../build/worker.js"></script> -->
+  <script type="module">
+    import polyfillRTCWorker from '../src/window/polyfill-worker.js';
+
+    const w = new Worker('../build/worker.js');
+    polyfillRTCWorker(w);
+  </script>
+</head>
+<body>
+</body>
+</html>
