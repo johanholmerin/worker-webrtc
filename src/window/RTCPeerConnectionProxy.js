@@ -1,24 +1,5 @@
-import { createCom } from './polyfill-worker.js';
-
-function assignChannel(channel, com) {
-  Object.assign(channel, {
-    onbufferedamountlow(event) {
-      console.log('onbufferedamountlow', event);
-    },
-    onclose(event) {
-      console.log('onclose', event);
-    },
-    onerror(event) {
-      console.log('onerror', event);
-    },
-    onmessage(event) {
-      this._com.send('onmessage', { data: event.data });
-    },
-    onopen(event) {
-      this._com.send('onopen', {});
-    }
-  });
-}
+import proxyRTCDataChannel from './proxyRTCDataChannel.js';
+import { addReference, getRef, call, set, construct } from '../utils/com.js';
 
 export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
@@ -27,50 +8,82 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
     Object.assign(this, {
       onaddstream(event) {
-        this._com.send('onaddstream', {});
+        call(this, {
+          name: 'onaddstream',
+          args: [{}]
+        });
       },
       ondatachannel(event) {
-        const id = this._com.addReference(event.channel);
-        assignChannel(event.channel, this._com);
-        createCom(this._com.worker, event.channel, id);
-        this._com.worker.postMessage({
-          command: 'ondatachannel',
-          connectionId: this._com.id,
-          id,
-          value: { label: event.channel.label }
+        const { channel } = event;
+        const { scope } = getRef(this);
+        proxyRTCDataChannel(channel);
+        addReference(channel, scope);
+        construct(channel, {
+          name: 'RTCDataChannel',
+          args: [event.channel.label, {}]
+        });
+        call(this, {
+          name: '_ondatachannel',
+          args: [channel._id]
         });
       },
       onicecandidate(event) {
-        this._com.send('onicecandidate', {
-          candidate: event.candidate ? event.candidate.toJSON() : undefined
+        const candidate = event.candidate ? event.candidate.toJSON() : undefined;
+        call(this, {
+          name: 'onicecandidate',
+          args: [{ candidate }]
         });
       },
       oniceconnectionstatechange(event) {
-        this._com.set('iceConnectionState', this.iceConnectionState);
-        this._com.set('iceGatheringState', this.iceGatheringState);
-        this._com.send('oniceconnectionstatechange', {});
+        set(this, {
+          name: 'iceConnectionState',
+          value: this.iceConnectionState
+        });
+        set(this, {
+          name: 'iceGatheringState',
+          value: this.iceGatheringState
+        });
+        call(this, {
+          name: 'oniceconnectionstatechange',
+          args: [{}]
+        });
       },
       onicegatheringstatechange(event) {
-        this._com.send('onicegatheringstatechange', {});
+        call(this, {
+          name: 'onicegatheringstatechange',
+          args: [{}]
+        });
       },
       onnegotiationneeded(event) {
-        this._com.send('onnegotiationneeded', {});
+        call(this, {
+          name: 'onnegotiationneeded',
+          args: [{}]
+        });
       },
       onremovestream(event) {
-        this._com.send('onremovestream', {});
+        call(this, {
+          name: 'onremovestream',
+          args: [{}]
+        });
       },
       onsignalingstatechange(event) {
-        this._com.set('signalingState', this.signalingState);
-        this._com.send('onsignalingstatechange', {});
+        set(this, {
+          name: 'signalingState',
+          value: this.signalingState
+        });
+        call(this, {
+          name: 'onsignalingstatechange',
+          args: [{}]
+        });
       }
     });
   }
 
-
-  createDataChannel(...args) {
+  createDataChannel(id, ...args) {
+    const { scope } = getRef(this);
     const channel = super.createDataChannel(...args);
-    assignChannel(channel, this._com);
-    return channel;
+    proxyRTCDataChannel(channel);
+    addReference(channel, scope, id);
   }
 
   createOffer(...args) {
@@ -83,10 +96,16 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   getStats() {
     return super.getStats().then(stats => {
-      const list = [];
-      stats.forEach(stat => list.push(stat));
-      return list;
+      return Array.from(stats.values());
     });
+  }
+
+  setLocalDescription(...args) {
+    return super.setLocalDescription(...args);
+  }
+
+  setRemoteDescription(...args) {
+    return super.setRemoteDescription(...args);
   }
 
 }

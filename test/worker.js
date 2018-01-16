@@ -1,6 +1,4 @@
-import RTCPeerConnection from '../src/worker/RTCPeerConnection.js';
-import RTCSessionDescription from '../src/worker/RTCSessionDescription.js';
-import RTCIceCandidate from '../src/worker/RTCIceCandidate.js';
+import '../src/worker/polyfill.js';
 import SimplePeer from 'simple-peer/simplepeer.min.js';
 
 // SimplePeer.prototype._debug = console.log;

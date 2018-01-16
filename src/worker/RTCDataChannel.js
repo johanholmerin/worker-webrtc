@@ -1,5 +1,5 @@
 import EventTarget from 'event-target';
-import * as com from './com.js';
+import { call } from '../utils/com.js';
 
 export default class RTCDataChannel extends EventTarget {
 
@@ -20,12 +20,18 @@ export default class RTCDataChannel extends EventTarget {
     this.reliable = true;
   }
 
-  send(data) {
-    com.call(this._id, 'send', [data]);
+  send(...args) {
+    call(this, {
+      name: 'send',
+      args: [...args]
+    });
   }
 
   close() {
-    console.log('close');
+    call(this, {
+      name: 'args',
+      args: []
+    });
   }
 
 }

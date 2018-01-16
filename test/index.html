@@ -6,7 +6,7 @@
 
   <!-- <script src="../build/worker.js"></script> -->
   <script type="module">
-    import polyfillRTCWorker from '../src/window/polyfill-worker.js';
+    import polyfillRTCWorker from '../src/window/polyfill.js';
 
     const w = new Worker('../build/worker.js');
     polyfillRTCWorker(w);

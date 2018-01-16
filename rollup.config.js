@@ -6,12 +6,14 @@ export default {
   input: 'test/worker.js',
   output: {
     file: 'build/worker.js',
-    format: 'es'
+    format: 'iife',
+    sourcemap: true
   },
   plugins: [
     nodeResolve(),
     commonjs(),
     browsersync({
+      files: '.',
       server: '.',
       open: false,
       notify: false
