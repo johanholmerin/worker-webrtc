@@ -3,11 +3,11 @@ export * from '../utils/com.js';
 import { addListener } from '../utils/com.js';
 
 const wrtc = {
-  RTCDataChannel,
+  // RTCDataChannel,
   RTCDataChannelEvent,
   RTCIceCandidate,
   RTCPeerConnection,
-  RTCPeerConnectionIceEvent,
+  // RTCPeerConnectionIceEvent,
   RTCSessionDescription,
   RTCStatsReport
 };

@@ -7,28 +7,30 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
     super(...args);
 
     Object.assign(this, {
-      onaddstream(event) {
-        call(this, {
-          name: 'onaddstream',
-          args: [{}]
-        });
-      },
+      // onaddstream(event) {},
+      // onconnectionstatechange(event) {},
+      // onidentityresult(event) {},
+      // onidpassertionerror(event) {},
+      // onidpvalidationerror(event) {},
+      // onpeeridentity(event) {},
+      // onremovestream(event) {},
+      // ontrack(event) {},
       ondatachannel(event) {
         const { channel } = event;
         const { scope } = getRef(this);
-        proxyRTCDataChannel(channel);
         addReference(channel, scope);
         construct(channel, {
           name: 'RTCDataChannel',
           args: [event.channel.label, {}]
         });
+        proxyRTCDataChannel(channel);
         call(this, {
           name: '_ondatachannel',
           args: [channel._id]
         });
       },
       onicecandidate(event) {
-        const candidate = event.candidate ? event.candidate.toJSON() : undefined;
+        const candidate = event.candidate && event.candidate.toJSON();
         call(this, {
           name: 'onicecandidate',
           args: [{ candidate }]
@@ -36,12 +38,8 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       },
       oniceconnectionstatechange(event) {
         set(this, {
-          name: 'iceConnectionState',
-          value: this.iceConnectionState
-        });
-        set(this, {
-          name: 'iceGatheringState',
-          value: this.iceGatheringState
+          iceConnectionState: this.iceConnectionState,
+          iceGatheringState: this.iceGatheringState
         });
         call(this, {
           name: 'oniceconnectionstatechange',
@@ -68,8 +66,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       },
       onsignalingstatechange(event) {
         set(this, {
-          name: 'signalingState',
-          value: this.signalingState
+          signalingState: this.signalingState
         });
         call(this, {
           name: 'onsignalingstatechange',
@@ -77,21 +74,39 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         });
       }
     });
+
+    // XXX wait for reference add
+    setTimeout(() => {
+      set(this, {
+        canTrickleIceCandidates: this.canTrickleIceCandidates,
+        connectionState: this.connectionState,
+        defaultIceServers: this.defaultIceServers,
+        iceConnectionState: this.iceConnectionState,
+        iceGatheringState: this.iceGatheringState,
+        signalingState: this.signalingState
+      });
+    });
   }
 
   createDataChannel(id, ...args) {
     const { scope } = getRef(this);
     const channel = super.createDataChannel(...args);
-    proxyRTCDataChannel(channel);
     addReference(channel, scope, id);
+    proxyRTCDataChannel(channel);
   }
 
   createOffer(...args) {
-    return super.createOffer(...args).then(desc => desc.toJSON());
+    return super.createOffer(...args).then(desc => {
+      if (desc && desc.toJSON) return desc.toJSON();
+      return desc;
+    });
   }
 
   createAnswer(...args) {
-    return super.createAnswer(...args).then(desc => desc.toJSON());
+    return super.createAnswer(...args).then(desc => {
+      if (desc && desc.toJSON) return desc.toJSON();
+      return desc;
+    });
   }
 
   getStats() {

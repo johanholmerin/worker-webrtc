@@ -67,7 +67,9 @@ export const functions = {
   },
   SET(data, id) {
     const { obj } = references[id];
-    obj[data.name] = data.value;
+    for (const key in data) {
+      obj[key] = data[key];
+    }
   },
   RPC_CALL(data, id, scope) {
     const { msg } = data;

@@ -10,16 +10,96 @@ import {
   getRefFromId
 } from '../utils/com.js';
 
+function isURL(string) {
+  try {
+    new URL(string);
+  } catch(_) {
+    return false;
+  }
+
+  return true;
+}
+
+function validateIceServers(iceServers) {
+  if (iceServers === undefined) return true;
+  if (!Array.isArray(iceServers)) return false;
+  return iceServers.every(iceServer => {
+    return iceServer && (
+      isURL(iceServer.urls) || (
+        Array.isArray(iceServer.urls) &&
+        iceServer.urls.every(url => isURL(url))
+      )
+    );
+  });
+}
+
+const RTCBundlePolicy = ['balanced', 'max-compat', 'max-bundle'];
+const RTCIceTransportPolicy = ['all', 'relay'];
+const RTCPeerConnectionState = [
+  'new',
+  'connecting',
+  'connected',
+  'disconnected',
+  'failed',
+  'closed'
+];
+
 export default class RTCPeerConnection extends EventTarget {
 
   constructor(configuration = {}) {
+    if (configuration === null) configuration = {};
+    if (typeof configuration !== 'object') {
+      throw new TypeError(
+        `Argument 1 of RTCPeerConnection.constructor can't be converted to a dictionary.`
+      );
+    }
+    if (
+      configuration.bundlePolicy !== undefined &&
+      !RTCBundlePolicy.includes(configuration.bundlePolicy)
+    ) {
+      throw new TypeError(
+        `'bundlePolicy' member of RTCConfiguration '${configuration.bundlePolicy}' is not a valid value for enumeration RTCBundlePolicy.`
+      );
+    }
+    if (
+      configuration.rtcpMuxPolicy !== undefined &&
+      !RTCRtcpMuxPolicy.includes(configuration.rtcpMuxPolicy)
+    ) {
+      throw new TypeError(
+        `'rtcpMuxPolicy' member of RTCConfiguration '${configuration.rtcpMuxPolicy}' is not a valid value for enumeration RTCRtcpMuxPolicy.`
+      );
+    }
+    if (
+      configuration.iceTransportPolicy !== undefined &&
+      !RTCIceTransportPolicy.includes(configuration.iceTransportPolicy)
+    ) {
+      throw new TypeError(
+        `'iceTransportPolicy' member of RTCConfiguration '${configuration.iceTransportPolicy}' is not a valid value for enumeration RTCIceTransportPolicy.`
+      );
+    }
+    if (!validateIceServers(configuration.iceServers)) {
+      throw new TypeError(
+        `Failed to construct 'RTCPeerConnection': Malformed RTCIceServer`
+      );
+    }
+
     super();
 
-    this.bundlePolicy = configuration.bundlePolicy;
-    this.iceTransportPolicy = configuration.iceTransportPolicy;
-    this.rtcpMuxPolicy = configuration.rtcpMuxPolicy;
+    // TODO
+    // this.canTrickleIceCandidates;
+    // this.connectionState;
+    // this.currentLocalDescription;
+    // this.currentRemoteDescription;
+    // this.defaultIceServers;
+    // this.iceConnectionState;
+    // this.iceGatheringState ;
+    // this.pendingLocalDescription;
+    // this.pendingRemoteDescription;
+    // this.sctp;
+    // this.signalingState;
 
-    this.remoteDescription = new RTCSessionDescription();
+    this.remoteDescription = null;
+    this.localDescription = null;
 
     addReference(this);
     construct(this, {
@@ -28,18 +108,25 @@ export default class RTCPeerConnection extends EventTarget {
     });
   }
 
-  createDataChannel(...args) {
-    const channel = new RTCDataChannel(...args);
+  createDataChannel(label, options) {
+    if (arguments.length < 1) {
+      throw new TypeError(
+        'Not enough arguments to RTCPeerConnection.createDataChannel.'
+      );
+    }
+    if (arguments.length > 1 && !(typeof options === 'object')) {
+      throw new TypeError(
+        `Argument 2 of RTCPeerConnection.createDataChannel can't be converted to a dictionary.`
+      );
+    }
+
+    const channel = new RTCDataChannel(label, options);
     addReference(channel);
     call(this, {
       name: 'createDataChannel',
-      args: [getRefId(channel), ...args]
+      args: [getRefId(channel), label, options]
     });
     return channel;
-  }
-
-  addTrack() {
-    console.log('addTrack', ...arguments);
   }
 
   addIceCandidate(...args) {
@@ -52,7 +139,10 @@ export default class RTCPeerConnection extends EventTarget {
   }
 
   close() {
-    console.log('close', ...arguments);
+    call(this, {
+      name: 'close',
+      args: []
+    });
   }
 
   createOffer(...args) {
@@ -102,9 +192,47 @@ export default class RTCPeerConnection extends EventTarget {
     });
   }
 
-  addStream() {
-    console.log('addStream', ...arguments);
-  }
+  // addStream() {
+  // }
+
+  // addTrack() {
+  // }
+
+  // generateCertificate() {
+  // }
+
+  // getConfiguration() {
+  // }
+
+  // getIdentityAssertion() {
+  // }
+
+  // getLocalStreams() {
+  // }
+
+  // getReceivers() {
+  // }
+
+  // getRemoteStreams() {
+  // }
+
+  // getSenders() {
+  // }
+
+  // getStreamById() {
+  // }
+
+  // removeStream() {
+  // }
+
+  // removeTrack() {
+  // }
+
+  // setConfiguration() {
+  // }
+
+  // setIdentityProvider() {
+  // }
 
   _ondatachannel(id) {
     const channel = getRefFromId(id).obj;
