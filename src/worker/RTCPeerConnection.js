@@ -8,6 +8,7 @@ import {
   call,
   construct,
   getRefId,
+  getRef,
   get,
   getRefFromId
 } from '../utils/com.js';
@@ -100,7 +101,8 @@ export default class RTCPeerConnection extends EventTarget {
     );
 
     const channel = new RTCDataChannel(label, options);
-    addReference(channel);
+    const { scope } = getRef(this);
+    addReference(channel, scope);
     call(this, {
       name: 'createDataChannel',
       args: [getRefId(channel), label, options]

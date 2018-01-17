@@ -1,9 +1,13 @@
 import getId from './id.js';
-import rpc from './rpc.js';
+import * as rpc from './rpc.js';
 
 export const references = {};
 
-export function addReference(obj, scope = self, id = getId()) {
+// Only in Worker
+let port;
+export const setPort = _port => port = _port;
+
+export function addReference(obj, scope = port, id = getId()) {
   obj._id = id;
   references[id] = { scope, obj };
 }
@@ -53,7 +57,8 @@ function post({ obj, msg, command }) {
 
 export function get(obj, msg) {
   const id = getRefId(obj);
-  return rpc({ id, msg });
+  const { scope } = getRef(obj);
+  return rpc.send({ id, msg }, scope);
 }
 
 export const functions = {
@@ -92,7 +97,10 @@ export function addListener(scope, wrtc) {
       event.data &&
       event.data.command &&
       event.data.command in functions
-    )) return;
+    )) {
+      rpc.onmessage(event);
+      return;
+    }
 
     functions[event.data.command](event.data.msg, event.data.id, scope, wrtc);
   });

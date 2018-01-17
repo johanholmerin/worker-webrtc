@@ -1,7 +1,7 @@
 let n = 0;
 const promises = {};
 
-self.addEventListener('message', event => {
+export function onmessage(event) {
   if (!(
     event.data &&
     event.data.command &&
@@ -10,13 +10,13 @@ self.addEventListener('message', event => {
 
   promises[event.data.id](event.data.msg);
   delete promises[event.data.id];
-});
+}
 
-export default function rpc(msg) {
+export function send(msg, scope) {
   return new Promise(res => {
     const id = n++;
     promises[id] = res;
-    self.postMessage({
+    scope.postMessage({
       command: 'RPC_CALL',
       id, msg
     });

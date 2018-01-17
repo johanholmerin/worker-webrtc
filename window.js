@@ -9,5 +9,8 @@ const wrtc = {
 };
 
 export default function polyfillWorker(worker) {
-  addListener(worker, wrtc);
+  const isShared = 'SharedWorker' in self && worker instanceof SharedWorker;
+  const port = isShared ? worker.port : worker;
+  addListener(port, wrtc);
+  if (isShared) port.start();
 }
