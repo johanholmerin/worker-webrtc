@@ -88,6 +88,10 @@ export default class RTCPeerConnection extends EventTarget {
     });
   }
 
+  get [Symbol.toStringTag]() {
+    return 'RTCPeerConnection';
+  }
+
   createDataChannel(label, options) {
     assert(arguments.length, 'Not enough arguments');
     assert(

@@ -21,6 +21,10 @@ export default class RTCSessionDescription {
     this.sdp = String(sdp || '');
   }
 
+  get [Symbol.toStringTag]() {
+    return 'RTCSessionDescription';
+  }
+
   toJSON() {
     return {
       sdp: this.sdp,

@@ -21,6 +21,10 @@ export default class RTCIceCandidate {
     this.sdpMLineIndex = 0;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'RTCIceCandidate';
+  }
+
   toJSON() {
     return {
       candidate: this.candidate,

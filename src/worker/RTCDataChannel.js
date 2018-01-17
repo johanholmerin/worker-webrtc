@@ -39,6 +39,10 @@ export default class RTCDataChannel extends EventTarget {
     this.reliable = true;
   }
 
+  get [Symbol.toStringTag]() {
+    return 'RTCDataChannel';
+  }
+
   send(...args) {
     call(this, {
       name: 'send',
