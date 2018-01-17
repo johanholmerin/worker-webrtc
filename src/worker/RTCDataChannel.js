@@ -1,21 +1,35 @@
 import EventTarget from 'event-target';
 import { call } from '../utils/com.js';
+import * as check from '../utils/check.js';
+import assert from '../utils/assert.js';
 
 export default class RTCDataChannel extends EventTarget {
 
-  constructor(label, options = {}) {
-    if (options === null) options = {};
+  constructor(label, options) {
+    assert(arguments.length, 'Not enough arguments');
+    assert(
+      check.undefined(options) || check.object(options),
+      `'${options}' is not a valid value for options`
+    );
+    const {
+      ordered,
+      maxPacketLifeTime,
+      maxRetransmits,
+      protocol,
+      negotiated,
+      id,
+    } = options || {};
 
     super();
 
     this.label = String(label);
 
-    this.ordered = Boolean(options.ordered);
-    this.maxPacketLifeTime = Number(options.maxPacketLifeTime) || null;
-    this.maxRetransmits = Number(options.maxRetransmits) || null;
-    this.protocol = String(options.protcol || '');
-    this.negotiated = Boolean(this.negotiated);
-    this.id = Number(options.id) || 65535;
+    this.ordered = Boolean(ordered);
+    this.maxPacketLifeTime = Number(maxPacketLifeTime) || null;
+    this.maxRetransmits = Number(maxRetransmits) || null;
+    this.protocol = String(protocol || '');
+    this.negotiated = Boolean(negotiated);
+    this.id = Number(id) || 65535;
 
     this.binaryType = 'blob';
     this.bufferedAmount = 0;

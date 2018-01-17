@@ -1,22 +1,24 @@
-const RTCSdpType = ['answer', 'offer', 'pranswer', 'rollback'];
+import { RTCSdpType } from './enums.js';
+import * as check from '../utils/check.js';
+import assert from '../utils/assert.js';
 
 export default class RTCSessionDescription {
 
-  constructor(descriptionInitDict = {}) {
-    if (descriptionInitDict === null) descriptionInitDict = {};
-    if (typeof descriptionInitDict !== 'object') {
-      throw new TypeError(
-        `Argument 1 of RTCSessionDescription.constructor can't be converted to a dictionary.`
-      );
-    }
-    if (!RTCSdpType.includes(descriptionInitDict.type)) {
-      throw new TypeError(
-        `'type' member of RTCSessionDescriptionInit '${descriptionInitDict.type}' is not a valid value for enumeration RTCSdpType.`
-      );
-    }
+  constructor(config) {
+    assert(
+      check.undefined(config) || check.object(config),
+      `'${config}' is not an object`
+    );
+    const { type, sdp } = config || {};
 
-    this.type = descriptionInitDict.type || '';
-    this.sdp = String(descriptionInitDict.sdp || '');
+    assert(
+      check.undefined(type) ||
+        check.includes(RTCSdpType, type),
+      `'${type}' is not a valid value for type`
+    );
+
+    this.type = type || '';
+    this.sdp = String(sdp || '');
   }
 
   toJSON() {

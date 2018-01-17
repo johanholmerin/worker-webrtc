@@ -1,6 +1,8 @@
 import RTCSessionDescription from './RTCSessionDescription.js';
 import EventTarget from 'event-target';
 import RTCDataChannel from './RTCDataChannel.js';
+import * as check from '../utils/check.js';
+import assert from '../utils/assert.js';
 import {
   addReference,
   call,
@@ -9,79 +11,57 @@ import {
   get,
   getRefFromId
 } from '../utils/com.js';
-
-function isURL(string) {
-  try {
-    new URL(string);
-  } catch(_) {
-    return false;
-  }
-
-  return true;
-}
+import {
+  RTCBundlePolicy,
+  RTCIceTransportPolicy,
+  RTCRtcpMuxPolicy
+} from './enums.js';
 
 function validateIceServers(iceServers) {
   if (iceServers === undefined) return true;
   if (!Array.isArray(iceServers)) return false;
+
   return iceServers.every(iceServer => {
-    return iceServer && (
-      isURL(iceServer.urls) || (
-        Array.isArray(iceServer.urls) &&
-        iceServer.urls.every(url => isURL(url))
-      )
-    );
+    if (check.url(iceServer.urls)) return true;
+
+    return Array.isArray(iceServer.urls) &&
+      iceServer.urls.every(url => check.url(url));
   });
 }
 
-const RTCBundlePolicy = ['balanced', 'max-compat', 'max-bundle'];
-const RTCIceTransportPolicy = ['all', 'relay'];
-const RTCPeerConnectionState = [
-  'new',
-  'connecting',
-  'connected',
-  'disconnected',
-  'failed',
-  'closed'
-];
-
 export default class RTCPeerConnection extends EventTarget {
 
-  constructor(configuration = {}) {
-    if (configuration === null) configuration = {};
-    if (typeof configuration !== 'object') {
-      throw new TypeError(
-        `Argument 1 of RTCPeerConnection.constructor can't be converted to a dictionary.`
-      );
-    }
-    if (
-      configuration.bundlePolicy !== undefined &&
-      !RTCBundlePolicy.includes(configuration.bundlePolicy)
-    ) {
-      throw new TypeError(
-        `'bundlePolicy' member of RTCConfiguration '${configuration.bundlePolicy}' is not a valid value for enumeration RTCBundlePolicy.`
-      );
-    }
-    if (
-      configuration.rtcpMuxPolicy !== undefined &&
-      !RTCRtcpMuxPolicy.includes(configuration.rtcpMuxPolicy)
-    ) {
-      throw new TypeError(
-        `'rtcpMuxPolicy' member of RTCConfiguration '${configuration.rtcpMuxPolicy}' is not a valid value for enumeration RTCRtcpMuxPolicy.`
-      );
-    }
-    if (
-      configuration.iceTransportPolicy !== undefined &&
-      !RTCIceTransportPolicy.includes(configuration.iceTransportPolicy)
-    ) {
-      throw new TypeError(
-        `'iceTransportPolicy' member of RTCConfiguration '${configuration.iceTransportPolicy}' is not a valid value for enumeration RTCIceTransportPolicy.`
-      );
-    }
-    if (!validateIceServers(configuration.iceServers)) {
-      throw new TypeError(
-        `Failed to construct 'RTCPeerConnection': Malformed RTCIceServer`
-      );
-    }
+  constructor(config) {
+    assert(
+      check.object(config) || check.undefined(config),
+      `'${config}' is not an object`
+    );
+    const {
+      bundlePolicy,
+      rtcpMuxPolicy,
+      iceTransportPolicy,
+      iceServers
+    } = config || {};
+
+    assert(
+      check.undefined(bundlePolicy) ||
+        check.includes(RTCBundlePolicy, bundlePolicy),
+      `'${bundlePolicy}' is not a valid value for bundlePolicy`
+    );
+    assert(
+      check.undefined(rtcpMuxPolicy) ||
+        check.includes(RTCRtcpMuxPolicy, rtcpMuxPolicy),
+      `'${rtcpMuxPolicy}' is not a valid value for rtcpMuxPolicy`
+    );
+    assert(
+      check.undefined(iceTransportPolicy) ||
+        check.includes(RTCIceTransportPolicy, iceTransportPolicy),
+      `'${iceTransportPolicy}' is not a valid value for iceTransportPolicy`
+    );
+    assert(
+      validateIceServers(iceServers),
+      `'${iceServers}' is not a valid value for iceServers`
+    );
 
     super();
 
@@ -104,21 +84,16 @@ export default class RTCPeerConnection extends EventTarget {
     addReference(this);
     construct(this, {
       name: 'RTCPeerConnection',
-      args: [configuration]
+      args: [config]
     });
   }
 
   createDataChannel(label, options) {
-    if (arguments.length < 1) {
-      throw new TypeError(
-        'Not enough arguments to RTCPeerConnection.createDataChannel.'
-      );
-    }
-    if (arguments.length > 1 && !(typeof options === 'object')) {
-      throw new TypeError(
-        `Argument 2 of RTCPeerConnection.createDataChannel can't be converted to a dictionary.`
-      );
-    }
+    assert(arguments.length, 'Not enough arguments');
+    assert(
+      check.undefined(options) || check.object(options),
+      `'${options}' is not a valid value for options`
+    );
 
     const channel = new RTCDataChannel(label, options);
     addReference(channel);
