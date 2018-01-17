@@ -1,6 +1,6 @@
-import RTCPeerConnection from './RTCPeerConnectionProxy.js';
-export * from '../utils/com.js';
-import { addListener } from '../utils/com.js';
+import RTCPeerConnection from './src/window/RTCPeerConnectionProxy.js';
+export * from './src/utils/com.js';
+import { addListener } from './src/utils/com.js';
 
 const wrtc = {
   RTCPeerConnection,

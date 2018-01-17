@@ -1,4 +1,11 @@
 {
+  "name": "worker-webrtc",
+  "author": "Johan Holmerin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:johanholmerin/worker-webrtc.git"
+  },
   "dependencies": {
     "event-target": "^1.2.0"
   },

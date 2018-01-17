@@ -2,7 +2,7 @@ import {
   RTCPeerConnection,
   RTCSessionDescription,
   RTCIceCandidate
-} from '../src/worker/polyfill.js';
+} from '../worker.js';
 import SimplePeer from 'simple-peer/simplepeer.min.js';
 
 // SimplePeer.prototype._debug = console.log;
