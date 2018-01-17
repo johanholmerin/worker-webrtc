@@ -4,9 +4,16 @@ import RTCSessionDescription from './RTCSessionDescription.js';
 import RTCIceCandidate from './RTCIceCandidate.js';
 import { addListener } from '../utils/com.js';
 
-self.RTCPeerConnection = RTCPeerConnection;
-self.RTCDataChannel = RTCDataChannel;
-self.RTCSessionDescription = RTCSessionDescription;
-self.RTCIceCandidate = RTCIceCandidate;
+addListener(self, {
+  RTCPeerConnection,
+  RTCDataChannel,
+  RTCSessionDescription,
+  RTCIceCandidate
+});
 
-addListener(self, self);
+export {
+  RTCPeerConnection,
+  RTCDataChannel,
+  RTCSessionDescription,
+  RTCIceCandidate
+};

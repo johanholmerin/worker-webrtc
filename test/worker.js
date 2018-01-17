@@ -1,4 +1,8 @@
-import '../src/worker/polyfill.js';
+import {
+  RTCPeerConnection,
+  RTCSessionDescription,
+  RTCIceCandidate
+} from '../src/worker/polyfill.js';
 import SimplePeer from 'simple-peer/simplepeer.min.js';
 
 // SimplePeer.prototype._debug = console.log;
