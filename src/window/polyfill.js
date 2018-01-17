@@ -3,13 +3,9 @@ export * from '../utils/com.js';
 import { addListener } from '../utils/com.js';
 
 const wrtc = {
-  // RTCDataChannel,
-  RTCDataChannelEvent,
-  RTCIceCandidate,
   RTCPeerConnection,
-  // RTCPeerConnectionIceEvent,
   RTCSessionDescription,
-  RTCStatsReport
+  RTCIceCandidate
 };
 
 export default function polyfillWorker(worker) {
