@@ -6,6 +6,10 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
   constructor(...args) {
     super(...args);
 
+    // Workaround for Safari: https://bugs.webkit.org/show_bug.cgi?id=172867
+    this.__proto__ = RTCPeerConnectionProxy.prototype;
+    const self = this;
+
     Object.assign(this, {
       // onaddstream(event) {},
       // onconnectionstatechange(event) {},
@@ -17,58 +21,58 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       // ontrack(event) {},
       ondatachannel(event) {
         const { channel } = event;
-        const { scope } = getRef(this);
+        const { scope } = getRef(self);
         addReference(channel, scope);
         construct(channel, {
           name: 'RTCDataChannel',
           args: [event.channel.label, {}]
         });
         proxyRTCDataChannel(channel);
-        call(this, {
+        call(self, {
           name: '_ondatachannel',
           args: [channel._id]
         });
       },
       onicecandidate(event) {
         const candidate = event.candidate && event.candidate.toJSON();
-        call(this, {
+        call(self, {
           name: 'onicecandidate',
           args: [{ candidate }]
         });
       },
       oniceconnectionstatechange(event) {
-        set(this, {
-          iceConnectionState: this.iceConnectionState,
-          iceGatheringState: this.iceGatheringState
+        set(self, {
+          iceConnectionState: self.iceConnectionState,
+          iceGatheringState: self.iceGatheringState
         });
-        call(this, {
+        call(self, {
           name: 'oniceconnectionstatechange',
           args: [{}]
         });
       },
       onicegatheringstatechange(event) {
-        call(this, {
+        call(self, {
           name: 'onicegatheringstatechange',
           args: [{}]
         });
       },
       onnegotiationneeded(event) {
-        call(this, {
+        call(self, {
           name: 'onnegotiationneeded',
           args: [{}]
         });
       },
       onremovestream(event) {
-        call(this, {
+        call(self, {
           name: 'onremovestream',
           args: [{}]
         });
       },
       onsignalingstatechange(event) {
-        set(this, {
-          signalingState: this.signalingState
+        set(self, {
+          signalingState: self.signalingState
         });
-        call(this, {
+        call(self, {
           name: 'onsignalingstatechange',
           args: [{}]
         });
@@ -111,6 +115,9 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   getStats() {
     return super.getStats().then(stats => {
+      // simple-peer Safari bug?
+      stats.forEach(stat => stat.selected = true);
+
       return Array.from(stats.values());
     });
   }
