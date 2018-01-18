@@ -1,3 +1,4 @@
+import './polyfill.js';
 import {
   RTCPeerConnection,
   RTCSessionDescription,

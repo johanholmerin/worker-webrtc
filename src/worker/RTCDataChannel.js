@@ -1,4 +1,3 @@
-import EventTarget from 'event-target';
 import { call } from '../utils/com.js';
 import * as check from '../utils/check.js';
 import assert from '../utils/assert.js';

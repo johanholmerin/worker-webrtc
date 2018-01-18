@@ -6,13 +6,10 @@
     "type": "git",
     "url": "git@github.com:johanholmerin/worker-webrtc.git"
   },
-  "dependencies": {
-    "event-target": "^1.2.0"
-  },
   "devDependencies": {
+    "event-target": "^1.2.0",
     "rollup": "^0.54.0",
-    "rollup-plugin-browsersync": "^0.2.6",
-    "rollup-plugin-node-resolve": "^3.0.2"
+    "rollup-plugin-browsersync": "^0.2.6"
   },
   "scripts": {
     "dev": "rollup -c -w"

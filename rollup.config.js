@@ -1,4 +1,3 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
 import browsersync from 'rollup-plugin-browsersync';
 
 export default [{
@@ -7,10 +6,7 @@ export default [{
     file: 'build/worker.js',
     format: 'iife',
     sourcemap: true
-  },
-  plugins: [
-    nodeResolve()
-  ]
+  }
 }, {
   input: 'test/test.js',
   output: {
@@ -19,7 +15,6 @@ export default [{
     sourcemap: true
   },
   plugins: [
-    nodeResolve(),
     browsersync({
       files: '.',
       server: '.',

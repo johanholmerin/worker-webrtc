@@ -1,5 +1,4 @@
 import RTCSessionDescription from './RTCSessionDescription.js';
-import EventTarget from 'event-target';
 import RTCDataChannel from './RTCDataChannel.js';
 import * as check from '../utils/check.js';
 import assert from '../utils/assert.js';
