@@ -68,7 +68,9 @@ export const functions = {
   },
   CALL(data, id) {
     const { obj } = references[id];
-    obj[data.name](...data.args);
+    if (typeof obj[data.name] === 'function') {
+      obj[data.name](...data.args);
+    }
   },
   SET(data, id) {
     const { obj } = references[id];
