@@ -1,4 +1,3 @@
-import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import browsersync from 'rollup-plugin-browsersync';
 
@@ -10,8 +9,7 @@ export default [{
     sourcemap: true
   },
   plugins: [
-    nodeResolve(),
-    commonjs()
+    nodeResolve()
   ]
 }, {
   input: 'test/test.js',
@@ -22,7 +20,6 @@ export default [{
   },
   plugins: [
     nodeResolve(),
-    commonjs(),
     browsersync({
       files: '.',
       server: '.',

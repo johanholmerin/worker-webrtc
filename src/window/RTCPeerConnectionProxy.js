@@ -115,9 +115,6 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   getStats() {
     return super.getStats().then(stats => {
-      // simple-peer Safari bug?
-      stats.forEach(stat => stat.selected = true);
-
       return Array.from(stats.values());
     });
   }

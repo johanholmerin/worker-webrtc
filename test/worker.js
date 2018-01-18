@@ -3,43 +3,49 @@ import {
   RTCSessionDescription,
   RTCIceCandidate
 } from '../worker.js';
-import SimplePeer from 'simple-peer/simplepeer.min.js';
 
-// SimplePeer.prototype._debug = console.log;
+const iceServers = [{
+  urls: 'stun:stun.l.google.com:19302'
+}, {
+  urls: 'stun:global.stun.twilio.com:3478?transport=udp'
+}];
 
-const peer1 = new SimplePeer({
-  initiator: true,
-  wrtc: { RTCPeerConnection, RTCSessionDescription, RTCIceCandidate }
-});
-const peer2 = new SimplePeer({
-  wrtc: { RTCPeerConnection, RTCSessionDescription, RTCIceCandidate }
-});
+const peer1 = new RTCPeerConnection({ iceServers });
+const peer2 = new RTCPeerConnection({ iceServers });
 
-peer1.on('signal', data => {
-  // console.log(1, 'signal', data);
-  // when peer1 has signaling data, give it to peer2 somehow
-  peer2.signal(data);
-})
+peer1.onnegotiationneeded = async () => {
+  const offer = await peer1.createOffer();
+  await peer1.setLocalDescription(offer);
+  await peer2.setRemoteDescription(offer);
 
-peer2.on('signal', data => {
-  // console.log(2, 'signal', data);
-  // when peer2 has signaling data, give it to peer1 somehow
-  peer1.signal(data);
-})
+  const answer = await peer2.createAnswer();
+  await peer2.setLocalDescription(answer);
+  await peer1.setRemoteDescription(answer);
+};
 
-peer1.on('connect', () => {
-  // console.log(1, 'connect');
-  // wait for 'connect' event before using the data channel
-  peer1.send('hey peer2, how is it going?');
-})
+peer1.onicecandidate = ({ candidate }) => {
+  if (!candidate) return;
+  peer2.addIceCandidate(candidate);
+};
 
-peer1.on('data', data => {
-  // got a data channel message
+peer2.onicecandidate = ({ candidate }) => {
+  if (!candidate) return;
+  peer1.addIceCandidate(candidate);
+};
+
+const channel1 = peer1.createDataChannel('label');
+
+channel1.onopen = () => {
+  channel1.send('hey peer2, how is it going?');
+};
+
+channel1.onmessage = ({ data }) => {
   console.log('got a message from peer2: ' + data);
-})
+};
 
-peer2.on('data', data => {
-  // got a data channel message
-  console.log('got a message from peer1: ' + data);
-  peer2.send('👍');
-})
+peer2.ondatachannel = ({ channel }) => {
+  channel.onmessage = ({ data }) => {
+    console.log('got a message from peer1: ' + data);
+    channel.send('👍');
+  };
+};
