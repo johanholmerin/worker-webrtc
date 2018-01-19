@@ -32,38 +32,8 @@ function validateIceServers(iceServers) {
 export default class RTCPeerConnection extends EventTarget {
 
   constructor(config) {
-    assert(
-      check.object(config) || check.undefined(config),
-      `'${config}' is not an object`
-    );
-    const {
-      bundlePolicy,
-      rtcpMuxPolicy,
-      iceTransportPolicy,
-      iceServers
-    } = config || {};
-
-    assert(
-      check.undefined(bundlePolicy) ||
-        check.includes(RTCBundlePolicy, bundlePolicy),
-      `'${bundlePolicy}' is not a valid value for bundlePolicy`
-    );
-    assert(
-      check.undefined(rtcpMuxPolicy) ||
-        check.includes(RTCRtcpMuxPolicy, rtcpMuxPolicy),
-      `'${rtcpMuxPolicy}' is not a valid value for rtcpMuxPolicy`
-    );
-    assert(
-      check.undefined(iceTransportPolicy) ||
-        check.includes(RTCIceTransportPolicy, iceTransportPolicy),
-      `'${iceTransportPolicy}' is not a valid value for iceTransportPolicy`
-    );
-    assert(
-      validateIceServers(iceServers),
-      `'${iceServers}' is not a valid value for iceServers`
-    );
-
     super();
+    this._setConfiguration(config);
 
     // TODO
     // this.canTrickleIceCandidates;
@@ -172,6 +142,76 @@ export default class RTCPeerConnection extends EventTarget {
     });
   }
 
+  getConfiguration() {
+    return this._config;
+  }
+
+  setConfiguration(config) {
+    this._setConfiguration(config);
+    call(this, {
+      name: 'setConfiguration',
+      args: [config]
+    });
+  }
+
+  _setConfiguration(config) {
+    assert(
+      check.object(config) || check.undefined(config),
+      `'${config}' is not an object`
+    );
+    const {
+      bundlePolicy,
+      rtcpMuxPolicy,
+      iceTransportPolicy,
+      iceServers,
+      peerIdentity,
+      iceCandidatePoolSize,
+      // TODO
+      // certificates
+    } = config || {};
+
+    assert(
+      check.undefined(bundlePolicy) ||
+        check.includes(RTCBundlePolicy, bundlePolicy),
+      `'${bundlePolicy}' is not a valid value for bundlePolicy`
+    );
+    assert(
+      check.undefined(rtcpMuxPolicy) ||
+        check.includes(RTCRtcpMuxPolicy, rtcpMuxPolicy),
+      `'${rtcpMuxPolicy}' is not a valid value for rtcpMuxPolicy`
+    );
+    assert(
+      check.undefined(iceTransportPolicy) ||
+        check.includes(RTCIceTransportPolicy, iceTransportPolicy),
+      `'${iceTransportPolicy}' is not a valid value for iceTransportPolicy`
+    );
+    assert(
+      validateIceServers(iceServers),
+      `'${iceServers}' is not a valid value for iceServers`
+    );
+    assert(
+      check.string(peerIdentity) || check.undefined(peerIdentity),
+      `'${peerIdentity}' is not a valid value for peerIdentity`
+    );
+    assert(
+      (check.number(iceCandidatePoolSize) &&
+        iceCandidatePoolSize >= 0 &&
+        iceCandidatePoolSize < 256) || check.undefined(iceCandidatePoolSize),
+      `'${iceCandidatePoolSize}' is not a valid value for iceCandidatePoolSize`
+    );
+
+    this._config = {
+      bundlePolicy,
+      rtcpMuxPolicy,
+      iceTransportPolicy,
+      iceServers,
+      peerIdentity,
+      iceCandidatePoolSize,
+      // TODO
+      // certificates
+    };
+  }
+
   // addStream() {
   // }
 
@@ -179,9 +219,6 @@ export default class RTCPeerConnection extends EventTarget {
   // }
 
   // generateCertificate() {
-  // }
-
-  // getConfiguration() {
   // }
 
   // getIdentityAssertion() {
@@ -206,9 +243,6 @@ export default class RTCPeerConnection extends EventTarget {
   // }
 
   // removeTrack() {
-  // }
-
-  // setConfiguration() {
   // }
 
   // setIdentityProvider() {

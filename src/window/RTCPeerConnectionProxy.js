@@ -3,14 +3,15 @@ import { addReference, getRef, call, set, construct } from '../utils/com.js';
 
 export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
-  constructor(...args) {
-    super(...args);
+  constructor(config) {
+    super(config);
 
     // Workaround for Safari: https://bugs.webkit.org/show_bug.cgi?id=172867
     this.__proto__ = RTCPeerConnectionProxy.prototype;
     const self = this;
 
     Object.assign(this, {
+      // TODO
       // onaddstream(event) {},
       // onconnectionstatechange(event) {},
       // onidentityresult(event) {},
@@ -81,6 +82,8 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
     // XXX wait for reference add
     setTimeout(() => {
+      self._setConfiguration();
+
       set(this, {
         canTrickleIceCandidates: this.canTrickleIceCandidates,
         connectionState: this.connectionState,
@@ -125,6 +128,19 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   setRemoteDescription(...args) {
     return super.setRemoteDescription(...args);
+  }
+
+  setConfiguration(config) {
+    super.setConfiguration(config);
+    this._setConfiguration();
+  }
+
+  _setConfiguration() {
+    if ('getConfiguration' in this) {
+      set(this, {
+        _config: this.getConfiguration()
+      });
+    }
   }
 
 }

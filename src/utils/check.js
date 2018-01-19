@@ -2,6 +2,10 @@ export function string(obj) {
   return typeof obj === 'string';
 }
 
+export function number(obj) {
+  return typeof obj === 'number';
+}
+
 export function object(obj) {
   return typeof obj === 'object';
 }
