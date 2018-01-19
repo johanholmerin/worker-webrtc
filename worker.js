@@ -3,6 +3,7 @@ import RTCDataChannel from './src/worker/RTCDataChannel.js';
 import RTCSessionDescription from './src/worker/RTCSessionDescription.js';
 import RTCIceCandidate from './src/worker/RTCIceCandidate.js';
 import RTCCertificate from './src/worker/RTCCertificate.js';
+import RTCPeerConnectionIceEvent from './src/worker/RTCPeerConnectionIceEvent.js';
 import { addListener, setPort } from './src/utils/com.js';
 
 function init(port) {
@@ -12,7 +13,8 @@ function init(port) {
     RTCDataChannel,
     RTCSessionDescription,
     RTCIceCandidate,
-    RTCCertificate
+    RTCCertificate,
+    RTCPeerConnectionIceEvent
   });
   if (isShared) port.start();
 }
@@ -30,5 +32,6 @@ export {
   RTCSessionDescription,
   RTCIceCandidate,
   RTCCertificate,
+  RTCPeerConnectionIceEvent,
   init as addListener
 };

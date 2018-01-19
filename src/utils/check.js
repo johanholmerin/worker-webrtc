@@ -15,6 +15,11 @@ function _undefined(obj) {
 }
 export { _undefined as undefined };
 
+function _null(obj) {
+  return obj === null;
+}
+export { _null as null };
+
 export function includes(arr, val) {
   return arr.includes(val);
 }

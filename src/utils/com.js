@@ -56,7 +56,8 @@ function post({ obj, msg, command }) {
   const id = getRefId(obj);
   const { scope } = getRef(obj);
   scope.postMessage({
-    command, id, msg
+    command, id,
+    msg
   });
 }
 
@@ -70,40 +71,52 @@ export function get(obj, msg) {
   return rpc.send({ id, msg }, scope);
 }
 
+// Serialize class instance, with arguments to call constructor with
+export function serialize(cls, ...args) {
+  // cls.constructor.name should work, but
+  // RTC*Events have no constructor in Safari.
+  const [,name] = cls.toString().match(/\[object (.*)\]/) ||
+    [,cls.constructor.name];
+
+  return {
+    _type: name,
+    args
+  };
+}
+
+export function deserialize(obj, wrtc) {
+  for (const key in obj) {
+    const item = obj[key];
+    if (item && check.object(item)) {
+      if ('_type' in item) {
+        const cls = wrtc[item._type] || self[item._type];
+        const args = deserialize(item.args, wrtc);
+        obj[key] = new cls(...args);
+      } else {
+        obj[key] = deserialize(item, wrtc);
+      }
+    }
+  }
+
+  return obj;
+}
+
 export const functions = {
   CONSTRUCT(msg, id, scope, wrtc) {
-    const obj = new wrtc[msg.name](...msg.args);
+    const obj = new wrtc[msg.name](...deserialize(msg.args, wrtc));
     addReference(obj, scope, id);
   },
-  CALL(data, id) {
+  CALL(data, id, scope, wrtc) {
     const { obj } = references[id];
     if (typeof obj[data.name] === 'function') {
-      obj[data.name](...data.args);
+      obj[data.name](...deserialize(data.args, wrtc));
     }
   },
-  SET(data, id) {
+  SET(data, id, scope, wrtc) {
     const { obj } = references[id];
-    for (const key in data) {
+    for (const key in deserialize(data)) {
       obj[key] = data[key];
     }
-  },
-  RPC_CALL(data, id, scope, wrtc) {
-    const obj = check.string(data.id) ? wrtc[data.id] : references[data.id].obj;
-    const { msg } = data;
-
-    // XXX add reference to scope when calling static methods
-    if (check.string(data.id)) {
-      msg.args.push(scope);
-    }
-
-    const promise = obj[msg.name](...msg.args);
-    Promise.resolve(promise).then(res => {
-      scope.postMessage({
-        command: 'RPC_CALLBACK',
-        id,
-        msg: res
-      });
-    });
   }
 };
 
@@ -114,7 +127,7 @@ export function addListener(scope, wrtc) {
       event.data.command &&
       event.data.command in functions
     )) {
-      rpc.onmessage(event);
+      rpc.onmessage(event, scope, wrtc);
       return;
     }
 

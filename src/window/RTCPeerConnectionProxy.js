@@ -6,7 +6,8 @@ import {
   set,
   construct,
   getRefId,
-  getObjFromId
+  getObjFromId,
+  serialize
 } from '../utils/com.js';
 
 function getCertificates(config) {
@@ -29,19 +30,21 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       onconnectionstatechange(event) {
         call(self, {
           name: 'onicegatheringstatechange',
-          args: [{ connectionState: event.connectionState }]
+          args: [serialize(event, event.type, {
+            connectionState: event.connectionState
+          })]
         });
       },
       onidentityresult(event) {
         call(self, {
           name: 'onidentityresult',
-          args: [{}]
+          args: [{}] // TODO RTCIdentityEvent
         });
       },
       onpeeridentity(event) {
         call(self, {
           name: 'onpeeridentity',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       },
       ondatachannel(event) {
@@ -59,10 +62,13 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         });
       },
       onicecandidate(event) {
-        const candidate = event.candidate && event.candidate.toJSON();
         call(self, {
           name: 'onicecandidate',
-          args: [{ candidate }]
+          args: [serialize(event, event.type, {
+            candidate: event.candidate ?
+              serialize(event.candidate, event.candidate.toJSON()) :
+              event.candidate
+          })]
         });
       },
       oniceconnectionstatechange(event) {
@@ -72,25 +78,25 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         });
         call(self, {
           name: 'oniceconnectionstatechange',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       },
       onicegatheringstatechange(event) {
         call(self, {
           name: 'onicegatheringstatechange',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       },
       onnegotiationneeded(event) {
         call(self, {
           name: 'onnegotiationneeded',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       },
       onremovestream(event) {
         call(self, {
           name: 'onremovestream',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       },
       onsignalingstatechange(event) {
@@ -99,7 +105,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         });
         call(self, {
           name: 'onsignalingstatechange',
-          args: [{}]
+          args: [serialize(event, event.type)]
         });
       }
     });

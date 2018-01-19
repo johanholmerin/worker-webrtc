@@ -1,11 +1,11 @@
-import { call, set } from '../utils/com.js';
+import { call, set, serialize } from '../utils/com.js';
 
 export default datachannel => {
   Object.assign(datachannel, {
     onbufferedamountlow(event) {
       call(this, {
         name: 'onbufferedamountlow',
-        args: [{}]
+        args: [serialize(event, event.type)]
       });
     },
     onclose(event) {
@@ -14,25 +14,33 @@ export default datachannel => {
       });
       call(this, {
         name: 'onclose',
-        args: [{}]
+        args: [serialize(event, event.type)]
       });
     },
     onerror(event) {
       call(this, {
-        name: '',
-        args: [{ message: event.message }]
+        name: 'onerror',
+        args: [serialize(event, event.type, {
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          error: serialize(event.error, event.error.message)
+        })]
       });
     },
     onmessage(event) {
       call(this, {
         name: 'onmessage',
-        args: [{ data: event.data }]
+        args: [serialize(event, event.type, {
+          data: event.data
+        })]
       });
     },
     onopen(event) {
       call(this, {
         name: 'onopen',
-        args: [{}]
+        args: [serialize(event, event.type)]
       });
     }
   });
