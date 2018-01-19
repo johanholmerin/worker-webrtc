@@ -28,15 +28,24 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
     const self = this;
 
     Object.assign(this, {
-      // TODO
-      // onaddstream(event) {},
-      // onconnectionstatechange(event) {},
-      // onidentityresult(event) {},
-      // onidpassertionerror(event) {},
-      // onidpvalidationerror(event) {},
-      // onpeeridentity(event) {},
-      // onremovestream(event) {},
-      // ontrack(event) {},
+      onconnectionstatechange(event) {
+        call(self, {
+          name: 'onicegatheringstatechange',
+          args: [{ connectionState: event.connectionState }]
+        });
+      },
+      onidentityresult(event) {
+        call(self, {
+          name: 'onidentityresult',
+          args: [{}]
+        });
+      },
+      onpeeridentity(event) {
+        call(self, {
+          name: 'onpeeridentity',
+          args: [{}]
+        });
+      },
       ondatachannel(event) {
         const { channel } = event;
         const { scope } = getRef(self);

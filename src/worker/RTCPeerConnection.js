@@ -42,18 +42,9 @@ export default class RTCPeerConnection extends EventTarget {
     super();
     this._setConfiguration(config);
 
-    // TODO
-    // this.canTrickleIceCandidates;
-    // this.connectionState;
-    // this.currentLocalDescription;
-    // this.currentRemoteDescription;
-    // this.defaultIceServers;
-    // this.iceConnectionState;
-    // this.iceGatheringState ;
-    // this.pendingLocalDescription;
-    // this.pendingRemoteDescription;
-    // this.sctp;
-    // this.signalingState;
+    this.iceConnectionState = 'new';
+    this.iceGatheringState = 'new';
+    this.signalingState = 'stable';
 
     this.remoteDescription = null;
     this.localDescription = null;
@@ -234,37 +225,6 @@ export default class RTCPeerConnection extends EventTarget {
       return getRefFromId(id).obj;
     });
   }
-
-  // addStream() {
-  // }
-
-  // addTrack() {
-  // }
-
-
-  // getLocalStreams() {
-  // }
-
-  // getReceivers() {
-  // }
-
-  // getRemoteStreams() {
-  // }
-
-  // getSenders() {
-  // }
-
-  // getStreamById() {
-  // }
-
-  // removeStream() {
-  // }
-
-  // removeTrack() {
-  // }
-
-  // setIdentityProvider() {
-  // }
 
   _ondatachannel(id) {
     const channel = getRefFromId(id).obj;
