@@ -19,6 +19,10 @@ export function includes(arr, val) {
   return arr.includes(val);
 }
 
+export function array(arr) {
+  return Array.isArray(arr);
+}
+
 export function url(string) {
   try {
     new URL(string);

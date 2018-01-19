@@ -1,5 +1,6 @@
 import getId from './id.js';
 import * as rpc from './rpc.js';
+import * as check from './check.js';
 
 export const references = {};
 
@@ -56,6 +57,10 @@ function post({ obj, msg, command }) {
 }
 
 export function get(obj, msg) {
+  if (check.string(obj)) {
+    return rpc.send({ id: obj, msg }, port);
+  }
+
   const id = getRefId(obj);
   const { scope } = getRef(obj);
   return rpc.send({ id, msg }, scope);
@@ -78,11 +83,16 @@ export const functions = {
       obj[key] = data[key];
     }
   },
-  RPC_CALL(data, id, scope) {
+  RPC_CALL(data, id, scope, wrtc) {
+    const obj = check.string(data.id) ? wrtc[data.id] : references[data.id].obj;
     const { msg } = data;
-    const { obj } = references[data.id];
-    const promise = obj[msg.name](...msg.args);
 
+    // XXX add reference to scope when calling static methods
+    if (check.string(data.id)) {
+      msg.args.push(scope);
+    }
+
+    const promise = obj[msg.name](...msg.args);
     Promise.resolve(promise).then(res => {
       scope.postMessage({
         command: 'RPC_CALLBACK',

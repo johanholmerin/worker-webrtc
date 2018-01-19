@@ -1,5 +1,6 @@
 import RTCSessionDescription from './RTCSessionDescription.js';
 import RTCDataChannel from './RTCDataChannel.js';
+import RTCCertificate from './RTCCertificate.js';
 import * as check from '../utils/check.js';
 import assert from '../utils/assert.js';
 import {
@@ -27,6 +28,12 @@ function validateIceServers(iceServers) {
     return Array.isArray(iceServer.urls) &&
       iceServer.urls.every(url => check.url(url));
   });
+}
+
+function setCertificates(config) {
+  if (config && Array.isArray(config.certificates)) {
+    config.certificates = config.certificates.map(cert => getRefId(cert));
+  }
 }
 
 export default class RTCPeerConnection extends EventTarget {
@@ -166,8 +173,7 @@ export default class RTCPeerConnection extends EventTarget {
       iceServers,
       peerIdentity,
       iceCandidatePoolSize,
-      // TODO
-      // certificates
+      certificates
     } = config || {};
 
     assert(
@@ -200,16 +206,33 @@ export default class RTCPeerConnection extends EventTarget {
       `'${iceCandidatePoolSize}' is not a valid value for iceCandidatePoolSize`
     );
 
+    assert(
+      (
+        check.array(certificates) &&
+          certificates.every(cert => cert instanceof RTCCertificate)
+      ) || check.undefined(certificates),
+      `'${certificates}' is not a valid value for certificates`
+    );
+    // Map certificates to IDs
+    setCertificates(config);
+
     this._config = {
       bundlePolicy,
       rtcpMuxPolicy,
       iceTransportPolicy,
       iceServers,
       peerIdentity,
-      iceCandidatePoolSize,
-      // TODO
-      // certificates
+      iceCandidatePoolSize
     };
+  }
+
+  static generateCertificate(algo) {
+    return get('RTCPeerConnection', {
+      name: 'generateCertificate',
+      args: [algo]
+    }).then(id => {
+      return getRefFromId(id).obj;
+    });
   }
 
   // addStream() {
@@ -218,11 +241,6 @@ export default class RTCPeerConnection extends EventTarget {
   // addTrack() {
   // }
 
-  // generateCertificate() {
-  // }
-
-  // getIdentityAssertion() {
-  // }
 
   // getLocalStreams() {
   // }

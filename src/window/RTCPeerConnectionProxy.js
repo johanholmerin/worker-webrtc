@@ -1,9 +1,26 @@
 import proxyRTCDataChannel from './proxyRTCDataChannel.js';
-import { addReference, getRef, call, set, construct } from '../utils/com.js';
+import {
+  addReference,
+  getRef,
+  call,
+  set,
+  construct,
+  getRefId,
+  getRefFromId
+} from '../utils/com.js';
+
+function getCertificates(config) {
+  if (config && Array.isArray(config.certificates)) {
+    config.certificates = config.certificates.map(id => {
+      return getRefFromId(id).obj;
+    });
+  }
+}
 
 export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   constructor(config) {
+    getCertificates(config);
     super(config);
 
     // Workaround for Safari: https://bugs.webkit.org/show_bug.cgi?id=172867
@@ -31,7 +48,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         proxyRTCDataChannel(channel);
         call(self, {
           name: '_ondatachannel',
-          args: [channel._id]
+          args: [getRefId(channel)]
         });
       },
       onicecandidate(event) {
@@ -131,6 +148,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
   }
 
   setConfiguration(config) {
+    getCertificates(config);
     super.setConfiguration(config);
     this._setConfiguration();
   }
@@ -141,6 +159,17 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
         _config: this.getConfiguration()
       });
     }
+  }
+
+  static generateCertificate(algo, scope) {
+    return RTCPeerConnection.generateCertificate(algo).then(cert => {
+      addReference(cert, scope);
+      construct(cert, {
+        name: 'RTCCertificate',
+        args: [algo]
+      });
+      return getRefId(cert);
+    });
   }
 
 }
