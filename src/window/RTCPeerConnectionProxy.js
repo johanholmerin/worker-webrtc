@@ -6,14 +6,12 @@ import {
   set,
   construct,
   getRefId,
-  getRefFromId
+  getObjFromId
 } from '../utils/com.js';
 
 function getCertificates(config) {
   if (config && Array.isArray(config.certificates)) {
-    config.certificates = config.certificates.map(id => {
-      return getRefFromId(id).obj;
-    });
+    config.certificates = config.certificates.map(id => getObjFromId(id));
   }
 }
 

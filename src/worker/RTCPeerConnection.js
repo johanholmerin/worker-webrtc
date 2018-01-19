@@ -10,7 +10,7 @@ import {
   getRefId,
   getRef,
   get,
-  getRefFromId
+  getObjFromId
 } from '../utils/com.js';
 import {
   RTCBundlePolicy,
@@ -221,13 +221,11 @@ export default class RTCPeerConnection extends EventTarget {
     return get('RTCPeerConnection', {
       name: 'generateCertificate',
       args: [algo]
-    }).then(id => {
-      return getRefFromId(id).obj;
-    });
+    }).then(id => getObjFromId(id));
   }
 
   _ondatachannel(id) {
-    const channel = getRefFromId(id).obj;
+    const channel = getObjFromId(id);
     this.ondatachannel({ channel });
   }
 

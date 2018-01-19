@@ -19,6 +19,10 @@ export function getRefFromId(id) {
   return ref;
 }
 
+export function getObjFromId(id) {
+  return getRefFromId(id).obj;
+}
+
 export function getRefId(obj) {
   return obj._id;
 }
