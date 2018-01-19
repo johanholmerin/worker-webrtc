@@ -35,12 +35,6 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
           })]
         });
       },
-      onidentityresult(event) {
-        call(self, {
-          name: 'onidentityresult',
-          args: [{}] // TODO RTCIdentityEvent
-        });
-      },
       onpeeridentity(event) {
         call(self, {
           name: 'onpeeridentity',
