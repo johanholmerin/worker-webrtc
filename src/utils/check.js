@@ -20,6 +20,11 @@ function _null(obj) {
 }
 export { _null as null };
 
+export function _function(obj) {
+  return typeof obj === 'function';
+}
+export { _function as function };
+
 export function includes(arr, val) {
   return arr.includes(val);
 }

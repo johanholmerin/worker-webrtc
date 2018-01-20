@@ -77,13 +77,11 @@ export default class RTCPeerConnection extends EventTarget {
     return channel;
   }
 
-  addIceCandidate(...args) {
+  addIceCandidate(candidate, ...args) {
     return get(this, {
       name: 'addIceCandidate',
-      args: [args[0]]
-    }).then(() => {
-      if (typeof args[1] === 'function') args[1]();
-    });
+      args: [candidate]
+    }).then(args[1], args[2]);
   }
 
   close() {
@@ -94,43 +92,41 @@ export default class RTCPeerConnection extends EventTarget {
   }
 
   createOffer(...args) {
+    const options = check.function(args[args.length - 1]) ?
+      undefined :
+      args[args.length - 1];
+
     return get(this, {
       name: 'createOffer',
-      args: [args[args.length - 1]]
-    }).then(offer => {
-      if (typeof args[0] === 'function') args[0](offer);
-      return offer;
-    });
+      args: [options]
+    }).then(args[0], args[1]);
   }
 
   createAnswer(...args) {
+    const options = check.function(args[args.length - 1]) ?
+      undefined :
+      args[args.length - 1];
+
     return get(this, {
       name: 'createAnswer',
-      args: [args[args.length - 1]]
-    }).then(answer => {
-      if (typeof args[0] === 'function') args[0](answer);
-      return answer;
-    });
+      args: [options]
+    }).then(args[0], args[1]);
   }
 
-  setLocalDescription(...args) {
-    this.localDescription = args[0];
+  setLocalDescription(localDescription, ...args) {
+    this.localDescription = localDescription;
     return get(this, {
       name: 'setLocalDescription',
-      args: [args[0]]
-    }).then(() => {
-      if (typeof args[1] === 'function') args[1]();
-    });
+      args: [localDescription]
+    }).then(args[1], args[2]);
   }
 
-  setRemoteDescription(...args) {
-    this.remoteDescription = args[0];
+  setRemoteDescription(remoteDescription, ...args) {
+    this.remoteDescription = remoteDescription;
     return get(this, {
       name: 'setRemoteDescription',
-      args: [args[0]]
-    }).then(() => {
-      if (typeof args[1] === 'function') args[1]();
-    });
+      args: [remoteDescription]
+    }).then(args[1], args[2]);
   }
 
   getStats() {
