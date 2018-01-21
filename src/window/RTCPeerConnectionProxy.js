@@ -173,7 +173,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       addReference(cert, scope);
       construct(cert, {
         name: 'RTCCertificate',
-        args: [algo]
+        args: [cert.expires]
       });
       return getRefId(cert);
     });

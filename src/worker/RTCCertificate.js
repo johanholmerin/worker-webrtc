@@ -1,7 +1,7 @@
 export default class RTCCertificate {
 
-  constructor(algo) {
-    Object.assign(this, algo);
+  constructor(expires) {
+    this.expires = expires;
   }
 
 }
