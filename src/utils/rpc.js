@@ -1,51 +1,36 @@
-import { getObjFromId } from './com.js';
-import * as check from './check.js';
+import { serialize, deserialize } from './com.js';
 
 let n = 0;
 const promises = {};
 
-const functions = {
-  RPC_CALL(data, id, scope, wrtc) {
-    const obj = check.string(data.id) ? wrtc[data.id] : getObjFromId(data.id);
-    const { msg } = data;
-
-    // XXX add reference to scope when calling static methods
-    if (check.string(data.id)) {
-      msg.args.push(scope);
-    }
-
-    const promise = obj[msg.name](...msg.args);
-    Promise.resolve(promise).then(res => {
-      scope.postMessage({
-        command: 'RPC_CALLBACK',
-        id,
-        msg: res
-      });
-    });
-  },
-  RPC_CALLBACK(data, id, scope, wrtc) {
-    promises[id](data);
-    delete promises[id];
-  }
-};
-
-export function onmessage(event, scope, wrtc) {
+export function onmessage(event, wrtc) {
   if (!(
     event.data &&
     event.data.command &&
-    event.data.command in functions
+    event.data.command === 'RPC_CALLBACK'
   )) return;
 
-  functions[event.data.command](event.data.msg, event.data.id, scope, wrtc);
+  const { success, msg, rpcId } = event.data;
+  const value = deserialize([msg], wrtc)[0];
+
+  const { res, rej } = promises[rpcId];
+  delete promises[rpcId];
+
+  if (success) res(value);
+  else rej(value);
 }
 
-export function send(msg, scope) {
-  return new Promise(res => {
-    const id = n++;
-    promises[id] = res;
-    scope.postMessage({
-      command: 'RPC_CALL',
-      id, msg
-    });
+export function send({ msg, id, command }, scope) {
+  return new Promise((res, rej) => {
+    const rpcId = n++;
+    promises[rpcId] = { res, rej };
+    scope.postMessage({ command, id, rpcId, msg });
+  });
+}
+
+export function respond({ rpcId, success, msg, scope }) {
+  scope.postMessage({
+    command: 'RPC_CALLBACK',
+    msg, success, rpcId
   });
 }

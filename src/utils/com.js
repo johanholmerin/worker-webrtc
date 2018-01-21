@@ -31,22 +31,15 @@ export function getRef(obj) {
   return getRefFromId(getRefId(obj));
 }
 
-export function call(obj, msg) {
-  post({
-    command: 'CALL',
-    msg, obj
-  });
-}
-
 export function set(obj, msg) {
-  post({
+  return post({
     command: 'SET',
     msg, obj
   });
 }
 
 export function construct(obj, msg) {
-  post({
+  return post({
     command: 'CONSTRUCT',
     msg, obj
   });
@@ -55,20 +48,15 @@ export function construct(obj, msg) {
 function post({ obj, msg, command }) {
   const id = getRefId(obj);
   const { scope } = getRef(obj);
-  scope.postMessage({
-    command, id,
-    msg
-  });
+  return rpc.send({ id, msg, command }, scope);
 }
 
-export function get(obj, msg) {
+export function call(obj, msg) {
   if (check.string(obj)) {
-    return rpc.send({ id: obj, msg }, port);
+    return rpc.send({ id: obj, msg, command: 'CALL' }, port);
   }
 
-  const id = getRefId(obj);
-  const { scope } = getRef(obj);
-  return rpc.send({ id, msg }, scope);
+  return post({ obj, msg, command: 'CALL' });
 }
 
 // Serialize class instance, with arguments to call constructor with
@@ -107,9 +95,15 @@ export const functions = {
     addReference(obj, scope, id);
   },
   CALL(data, id, scope, wrtc) {
-    const { obj } = references[id];
+    const obj = check.string(id) ? wrtc[id] : getObjFromId(id);
+
+    // XXX add reference to scope when calling static methods
+    if (check.string(id)) {
+      data.args.push(scope);
+    }
+
     if (typeof obj[data.name] === 'function') {
-      obj[data.name](...deserialize(data.args, wrtc));
+      return obj[data.name](...deserialize(data.args, wrtc));
     }
   },
   SET(data, id, scope, wrtc) {
@@ -120,6 +114,14 @@ export const functions = {
   }
 };
 
+function resolveFunction(func) {
+  try {
+    return Promise.resolve(func());
+  } catch(error) {
+    return Promise.reject(error);
+  }
+}
+
 export function addListener(scope, wrtc) {
   scope.addEventListener('message', event => {
     if (!(
@@ -127,10 +129,25 @@ export function addListener(scope, wrtc) {
       event.data.command &&
       event.data.command in functions
     )) {
-      rpc.onmessage(event, scope, wrtc);
+      rpc.onmessage(event, wrtc);
       return;
     }
 
-    functions[event.data.command](event.data.msg, event.data.id, scope, wrtc);
+    const { rpcId, command, msg, id } = event.data;
+
+    resolveFunction(() =>
+      functions[command](msg, id, scope, wrtc)
+    ).then(msg => {
+      rpc.respond({
+        success: true,
+        rpcId, msg, scope
+      });
+    }, error => {
+      rpc.respond({
+        success: false,
+        msg: serialize(error, error.message),
+        rpcId, scope
+      });
+    });
   });
 }

@@ -9,7 +9,6 @@ import {
   construct,
   getRefId,
   getRef,
-  get,
   getObjFromId
 } from '../utils/com.js';
 import {
@@ -78,7 +77,7 @@ export default class RTCPeerConnection extends EventTarget {
   }
 
   addIceCandidate(candidate, ...args) {
-    return get(this, {
+    return call(this, {
       name: 'addIceCandidate',
       args: [candidate]
     }).then(args[1], args[2]);
@@ -96,7 +95,7 @@ export default class RTCPeerConnection extends EventTarget {
       undefined :
       args[args.length - 1];
 
-    return get(this, {
+    return call(this, {
       name: 'createOffer',
       args: [options]
     }).then(args[0], args[1]);
@@ -107,7 +106,7 @@ export default class RTCPeerConnection extends EventTarget {
       undefined :
       args[args.length - 1];
 
-    return get(this, {
+    return call(this, {
       name: 'createAnswer',
       args: [options]
     }).then(args[0], args[1]);
@@ -115,7 +114,7 @@ export default class RTCPeerConnection extends EventTarget {
 
   setLocalDescription(localDescription, ...args) {
     this.localDescription = localDescription;
-    return get(this, {
+    return call(this, {
       name: 'setLocalDescription',
       args: [localDescription]
     }).then(args[1], args[2]);
@@ -123,14 +122,14 @@ export default class RTCPeerConnection extends EventTarget {
 
   setRemoteDescription(remoteDescription, ...args) {
     this.remoteDescription = remoteDescription;
-    return get(this, {
+    return call(this, {
       name: 'setRemoteDescription',
       args: [remoteDescription]
     }).then(args[1], args[2]);
   }
 
   getStats() {
-    return get(this, {
+    return call(this, {
       name: 'getStats',
       args: []
     });
@@ -214,7 +213,7 @@ export default class RTCPeerConnection extends EventTarget {
   }
 
   static generateCertificate(algo) {
-    return get('RTCPeerConnection', {
+    return call('RTCPeerConnection', {
       name: 'generateCertificate',
       args: [algo]
     }).then(id => getObjFromId(id));
