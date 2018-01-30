@@ -38,6 +38,9 @@ export default datachannel => {
       });
     },
     onopen(event) {
+      set(datachannel, {
+        readyState: datachannel.readyState
+      });
       call(this, {
         name: 'onopen',
         args: [serialize(event, event.type)]
