@@ -1,15 +1,21 @@
 import { call, set, serialize } from '../utils/com.js';
+import * as utils from '../utils/utils.js';
 
 export default datachannel => {
+  const { send } = datachannel;
+
   Object.assign(datachannel, {
     onbufferedamountlow(event) {
+      set(this, {
+        bufferedAmount: this.bufferedAmount
+      });
       call(this, {
         name: 'onbufferedamountlow',
         args: [serialize(event, event.type)]
       });
     },
     onclose(event) {
-      set(datachannel, {
+      set(this, {
         readyState: this.readyState,
       });
       call(this, {
@@ -38,13 +44,32 @@ export default datachannel => {
       });
     },
     onopen(event) {
-      set(datachannel, {
-        readyState: datachannel.readyState
+      set(this, {
+        readyState: this.readyState
       });
       call(this, {
         name: 'onopen',
         args: [serialize(event, event.type)]
       });
+    },
+    send(data) {
+      const { bufferedAmount } = this;
+      send.call(this, data);
+      set(this, {
+        bufferedAmount: this.bufferedAmount
+      });
+
+      // Emit bufferedamountlow if the browser did
+      // not increase bufferedAmount as expected.
+      if (
+        this.bufferedAmount <= this.bufferedAmountLowThreshold &&
+        (bufferedAmount + utils.getSize(data)) > this.bufferedAmountLowThreshold
+      ) {
+        call(this, {
+          name: 'onbufferedamountlow',
+          args: [{}]
+        });
+      }
     }
   });
 

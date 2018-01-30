@@ -2,6 +2,7 @@ import { call } from '../utils/com.js';
 import * as is from '../utils/is.js';
 import assert from '../utils/assert.js';
 import * as convert from '../utils/convert.js';
+import * as utils from '../utils/utils.js';
 
 export default class RTCDataChannel extends EventTarget {
 
@@ -56,10 +57,21 @@ export default class RTCDataChannel extends EventTarget {
     return 'RTCDataChannel';
   }
 
-  send(...args) {
+  send(data) {
+    assert(
+      is.string(data) ||
+        is.blob(data) ||
+        is.arrayBuffer(data) ||
+        is.arrayBufferView(data),
+      new TypeError('Invalid type')
+    );
+
+    // bufferedAmount needs to be set synchronously
+    this.bufferedAmount += utils.getSize(data);
+
     call(this, {
       name: 'send',
-      args: [...args]
+      args: [data]
     });
   }
 

@@ -41,3 +41,15 @@ export function url(string) {
     return false;
   }
 }
+
+export function blob(val) {
+  return val instanceof Blob;
+}
+
+export function arrayBuffer(val) {
+  return val instanceof ArrayBuffer;
+}
+
+export function arrayBufferView(val) {
+  return ArrayBuffer.isView(val);
+}
