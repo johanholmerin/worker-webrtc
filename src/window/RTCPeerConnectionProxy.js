@@ -29,7 +29,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
     Object.assign(this, {
       onconnectionstatechange(event) {
         call(self, {
-          name: 'onicegatheringstatechange',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type, {
             connectionState: event.connectionState
           })]
@@ -51,7 +51,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
       },
       onicecandidate(event) {
         call(self, {
-          name: 'onicecandidate',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type, {
             candidate: event.candidate ?
               serialize(event.candidate, event.candidate.toJSON()) :
@@ -65,25 +65,25 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
           iceGatheringState: self.iceGatheringState
         });
         call(self, {
-          name: 'oniceconnectionstatechange',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type)]
         });
       },
       onicegatheringstatechange(event) {
         call(self, {
-          name: 'onicegatheringstatechange',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type)]
         });
       },
       onnegotiationneeded(event) {
         call(self, {
-          name: 'onnegotiationneeded',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type)]
         });
       },
       onremovestream(event) {
         call(self, {
-          name: 'onremovestream',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type)]
         });
       },
@@ -92,7 +92,7 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
           signalingState: self.signalingState
         });
         call(self, {
-          name: 'onsignalingstatechange',
+          name: 'dispatchEvent',
           args: [serialize(event, event.type)]
         });
       }

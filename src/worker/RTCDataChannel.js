@@ -84,3 +84,11 @@ export default class RTCDataChannel extends EventTarget {
   }
 
 }
+
+utils.addPropertyListeners(RTCDataChannel, [
+  'bufferedamountlow',
+  'close',
+  'error',
+  'message',
+  'open'
+]);

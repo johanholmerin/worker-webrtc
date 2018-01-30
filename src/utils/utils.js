@@ -7,3 +7,26 @@ export function getSize(obj) {
   if (is.arrayBuffer(obj) || is.arrayBufferView(obj)) return obj.byteLength;
   return 0;
 }
+
+export function addPropertyListeners(cls, names) {
+  names.forEach(name => {
+    const key = `_${name}`;
+
+    Object.defineProperty(cls.prototype, `on${name}`, {
+      set(func) {
+        if (is.function(this[key])) {
+          this.removeEventListener(name, this[key]);
+        }
+
+        this[key] = func;
+
+        if (is.function(func)) {
+          this.addEventListener(name, func);
+        }
+      },
+      get() {
+        return this[key];
+      }
+    })
+  });
+}

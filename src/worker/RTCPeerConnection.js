@@ -2,6 +2,7 @@ import RTCSessionDescription from './RTCSessionDescription.js';
 import RTCDataChannel from './RTCDataChannel.js';
 import RTCCertificate from './RTCCertificate.js';
 import * as is from '../utils/is.js';
+import * as utils from '../utils/utils.js';
 import assert from '../utils/assert.js';
 import {
   addReference,
@@ -211,8 +212,20 @@ export default class RTCPeerConnection extends EventTarget {
   }
 
   _ondatachannel(id) {
-    const channel = getObjFromId(id);
-    this.ondatachannel({ channel });
+    const event = new Event('datachannel');
+    event.channel = getObjFromId(id);
+    this.dispatchEvent(event);
   }
 
 }
+
+utils.addPropertyListeners(RTCPeerConnection, [
+  'connectionstatechange',
+  'datachannel',
+  'icecandidate',
+  'iceconnectionstatechange',
+  'icegatheringstatechange',
+  'negotiationneeded',
+  'removestream',
+  'signalingstatechange'
+]);

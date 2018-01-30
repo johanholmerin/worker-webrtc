@@ -10,7 +10,7 @@ export default datachannel => {
         bufferedAmount: this.bufferedAmount
       });
       call(this, {
-        name: 'onbufferedamountlow',
+        name: 'dispatchEvent',
         args: [serialize(event, event.type)]
       });
     },
@@ -19,13 +19,13 @@ export default datachannel => {
         readyState: this.readyState,
       });
       call(this, {
-        name: 'onclose',
+        name: 'dispatchEvent',
         args: [serialize(event, event.type)]
       });
     },
     onerror(event) {
       call(this, {
-        name: 'onerror',
+        name: 'dispatchEvent',
         args: [serialize(event, event.type, {
           message: event.message,
           filename: event.filename,
@@ -37,7 +37,7 @@ export default datachannel => {
     },
     onmessage(event) {
       call(this, {
-        name: 'onmessage',
+        name: 'dispatchEvent',
         args: [serialize(event, event.type, {
           data: event.data
         })]
@@ -48,7 +48,7 @@ export default datachannel => {
         readyState: this.readyState
       });
       call(this, {
-        name: 'onopen',
+        name: 'dispatchEvent',
         args: [serialize(event, event.type)]
       });
     },
@@ -65,9 +65,10 @@ export default datachannel => {
         this.bufferedAmount <= this.bufferedAmountLowThreshold &&
         (bufferedAmount + utils.getSize(data)) > this.bufferedAmountLowThreshold
       ) {
+        const event = new Event('bufferedamountlow');
         call(this, {
-          name: 'onbufferedamountlow',
-          args: [{}]
+          name: 'dispatchEvent',
+          args: [serialize(event, event.type)]
         });
       }
     }
