@@ -1,7 +1,7 @@
 import RTCSessionDescription from './RTCSessionDescription.js';
 import RTCDataChannel from './RTCDataChannel.js';
 import RTCCertificate from './RTCCertificate.js';
-import * as check from '../utils/check.js';
+import * as is from '../utils/is.js';
 import assert from '../utils/assert.js';
 import {
   addReference,
@@ -14,18 +14,26 @@ import {
 import {
   RTCBundlePolicy,
   RTCIceTransportPolicy,
-  RTCRtcpMuxPolicy
 } from './enums.js';
+
+function checkIceServerURL(string, iceServer) {
+  if (!is.url(string)) return false;
+  const { protocol } = new URL(string);
+  if (protocol === 'stun:') return true;
+  if (protocol !== 'turn:' && protocol !== 'turns:') return false;
+  return 'username' in iceServer && 'credential' in iceServer;
+}
 
 function validateIceServers(iceServers) {
   if (iceServers === undefined) return true;
   if (!Array.isArray(iceServers)) return false;
 
   return iceServers.every(iceServer => {
-    if (check.url(iceServer.urls)) return true;
+    if (Array.isArray(iceServer.urls)) {
+      return iceServer.urls.every(url => checkIceServerURL(url, iceServer));
+    }
 
-    return Array.isArray(iceServer.urls) &&
-      iceServer.urls.every(url => check.url(url));
+    return checkIceServerURL(iceServer.urls, iceServer);
   });
 }
 
@@ -37,7 +45,8 @@ function setCertificates(config) {
 
 export default class RTCPeerConnection extends EventTarget {
 
-  constructor(config) {
+  constructor() {
+    const [config] = arguments;
     super();
     this._setConfiguration(config);
 
@@ -59,80 +68,73 @@ export default class RTCPeerConnection extends EventTarget {
     return 'RTCPeerConnection';
   }
 
-  createDataChannel(label, options) {
-    assert(arguments.length, 'Not enough arguments');
+  createDataChannel(label) {
+    const [,options] = arguments;
     assert(
-      check.undefined(options) || check.object(options),
-      `'${options}' is not a valid value for options`
+      this.signalingState !== 'closed',
+      new DOMException('Connection is closed', 'InvalidStateError')
     );
 
-    const channel = new RTCDataChannel(label, options);
+    const channel = new RTCDataChannel(...arguments);
     const { scope } = getRef(this);
     addReference(channel, scope);
     call(this, {
       name: 'createDataChannel',
-      args: [getRefId(channel), label, options]
+      args: [getRefId(channel), ...arguments]
     });
     return channel;
   }
 
-  addIceCandidate(candidate, ...args) {
+  addIceCandidate(candidate) {
     return call(this, {
       name: 'addIceCandidate',
       args: [candidate]
-    }).then(args[1], args[2]);
+    });
   }
 
   close() {
+    this.signalingState = 'closed';
     call(this, {
       name: 'close',
       args: []
     });
   }
 
-  createOffer(...args) {
-    const options = check.function(args[args.length - 1]) ?
-      undefined :
-      args[args.length - 1];
-
+  createOffer(options) {
     return call(this, {
       name: 'createOffer',
       args: [options]
-    }).then(args[0], args[1]);
+    });
   }
 
-  createAnswer(...args) {
-    const options = check.function(args[args.length - 1]) ?
-      undefined :
-      args[args.length - 1];
-
+  createAnswer(options) {
     return call(this, {
       name: 'createAnswer',
       args: [options]
-    }).then(args[0], args[1]);
+    });
   }
 
-  setLocalDescription(localDescription, ...args) {
+  setLocalDescription(localDescription) {
     this.localDescription = localDescription;
     return call(this, {
       name: 'setLocalDescription',
       args: [localDescription]
-    }).then(args[1], args[2]);
+    });
   }
 
-  setRemoteDescription(remoteDescription, ...args) {
+  setRemoteDescription(remoteDescription) {
     this.remoteDescription = remoteDescription;
     return call(this, {
       name: 'setRemoteDescription',
       args: [remoteDescription]
-    }).then(args[1], args[2]);
+    });
   }
 
   getStats() {
     return call(this, {
       name: 'getStats',
       args: []
-    });
+    }).then(id => getObjFromId(id));
   }
 
   getConfiguration() {
@@ -149,65 +151,54 @@ export default class RTCPeerConnection extends EventTarget {
 
   _setConfiguration(config) {
     assert(
-      check.object(config) || check.undefined(config),
-      `'${config}' is not an object`
+      is.object(config) || is.undefined(config),
+      new TypeError(`'${config}' is not an object`)
     );
     const {
       bundlePolicy,
-      rtcpMuxPolicy,
       iceTransportPolicy,
       iceServers,
-      peerIdentity,
       iceCandidatePoolSize,
       certificates
     } = config || {};
 
     assert(
-      check.undefined(bundlePolicy) ||
-        check.includes(RTCBundlePolicy, bundlePolicy),
-      `'${bundlePolicy}' is not a valid value for bundlePolicy`
-    );
-    assert(
-      check.undefined(rtcpMuxPolicy) ||
-        check.includes(RTCRtcpMuxPolicy, rtcpMuxPolicy),
-      `'${rtcpMuxPolicy}' is not a valid value for rtcpMuxPolicy`
-    );
-    assert(
-      check.undefined(iceTransportPolicy) ||
-        check.includes(RTCIceTransportPolicy, iceTransportPolicy),
-      `'${iceTransportPolicy}' is not a valid value for iceTransportPolicy`
-    );
-    assert(
-      validateIceServers(iceServers),
-      `'${iceServers}' is not a valid value for iceServers`
-    );
-    assert(
-      check.string(peerIdentity) || check.undefined(peerIdentity),
-      `'${peerIdentity}' is not a valid value for peerIdentity`
-    );
-    assert(
-      (check.number(iceCandidatePoolSize) &&
-        iceCandidatePoolSize >= 0 &&
-        iceCandidatePoolSize < 256) || check.undefined(iceCandidatePoolSize),
-      `'${iceCandidatePoolSize}' is not a valid value for iceCandidatePoolSize`
-    );
-
-    assert(
       (
-        check.array(certificates) &&
-          certificates.every(cert => cert instanceof RTCCertificate)
-      ) || check.undefined(certificates),
-      `'${certificates}' is not a valid value for certificates`
+        is.array(certificates) &&
+          certificates.every(cert => {
+            return cert instanceof RTCCertificate && cert.expires > Date.now();
+          })
+      ) || is.undefined(certificates),
+      new TypeError(`'${certificates}' is not a valid value for certificates`)
     );
     // Map certificates to IDs
     setCertificates(config);
 
+    assert(
+      is.undefined(bundlePolicy) ||
+        is.includes(RTCBundlePolicy, bundlePolicy),
+      new TypeError(`'${bundlePolicy}' is not a valid value for bundlePolicy`)
+    );
+    assert(
+      is.undefined(iceTransportPolicy) ||
+        is.includes(RTCIceTransportPolicy, iceTransportPolicy),
+      new TypeError(`'${iceTransportPolicy}' is not a valid value for iceTransportPolicy`)
+    );
+    assert(
+      validateIceServers(iceServers),
+      new TypeError(`'${iceServers}' is not a valid value for iceServers`)
+    );
+    assert(
+      (is.number(iceCandidatePoolSize) &&
+        iceCandidatePoolSize >= 0 &&
+        iceCandidatePoolSize < 256) || is.undefined(iceCandidatePoolSize),
+      new TypeError(`'${iceCandidatePoolSize}' is not a valid value for iceCandidatePoolSize`)
+    );
+
     this._config = {
       bundlePolicy,
-      rtcpMuxPolicy,
       iceTransportPolicy,
       iceServers,
-      peerIdentity,
       iceCandidatePoolSize
     };
   }

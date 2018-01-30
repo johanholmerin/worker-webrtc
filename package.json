@@ -7,11 +7,21 @@
     "url": "git@github.com:johanholmerin/worker-webrtc.git"
   },
   "devDependencies": {
+    "blue-tape": "^1.0.0",
+    "chromedriver": "^2.35.0",
     "event-target": "^1.2.0",
-    "rollup": "^0.54.0",
-    "rollup-plugin-browsersync": "^0.2.6"
+    "faucet": "^0.0.1",
+    "geckodriver": "^1.10.0",
+    "rollup": "^0.54.1",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.1.0",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "selenium-webdriver": "^4.0.0-alpha.1",
+    "serve-static": "^1.13.1"
   },
   "scripts": {
-    "dev": "rollup -c -w"
+    "test": "npm run build-test && node test/webdriver.js | faucet",
+    "build-test": "rollup -c"
   }
 }

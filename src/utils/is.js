@@ -3,7 +3,7 @@ export function string(obj) {
 }
 
 export function number(obj) {
-  return typeof obj === 'number';
+  return typeof obj === 'number' && !Number.isNaN(obj);
 }
 
 export function object(obj) {

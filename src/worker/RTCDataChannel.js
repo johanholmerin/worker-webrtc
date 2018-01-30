@@ -1,40 +1,54 @@
 import { call } from '../utils/com.js';
-import * as check from '../utils/check.js';
+import * as is from '../utils/is.js';
 import assert from '../utils/assert.js';
+import * as convert from '../utils/convert.js';
 
 export default class RTCDataChannel extends EventTarget {
 
   constructor(label, options) {
-    assert(arguments.length, 'Not enough arguments');
+    assert(arguments.length, new TypeError('Not enough arguments'));
     assert(
-      check.undefined(options) || check.object(options),
+      is.undefined(options) || is.object(options),
       `'${options}' is not a valid value for options`
     );
     const {
-      ordered,
-      maxPacketLifeTime,
       maxRetransmits,
-      protocol,
-      negotiated,
-      id,
+      ordered = true,
+      protocol = '',
+      negotiated = false,
+      id
     } = options || {};
 
     super();
 
-    this.label = String(label);
+    this.label = convert.toString(label);
+    assert(this.label.length <= 65535, new TypeError('Label too long'));
 
+    this.readyState = 'connecting';
+    this.maxRetransmits = is.undefined(maxRetransmits) ?
+      null :
+      convert.toUnsignedShort(maxRetransmits);
     this.ordered = Boolean(ordered);
-    this.maxPacketLifeTime = Number(maxPacketLifeTime) || null;
-    this.maxRetransmits = Number(maxRetransmits) || null;
-    this.protocol = String(protocol || '');
+
+    this.protocol = convert.toString(protocol);
+    assert(this.protocol.length <= 65535, new TypeError('Protocol too long'));
+
     this.negotiated = Boolean(negotiated);
-    this.id = Number(id) || 65535;
+    this.id = this.negotiated && !is.undefined(id) ?
+      convert.toUnsignedShort(id) :
+      null;
+
+    assert(
+      !this.negotiated || this.id !== null,
+      new TypeError('Id required when negotiated is true')
+    );
+
+    assert(this.id !== 65535, new TypeError(`Id can't be 65535`));
 
     this.binaryType = 'blob';
     this.bufferedAmount = 0;
     this.bufferedAmountLowThreshold = 0;
     this.maxRetransmitTime = 65535;
-    this.readyState = 'connecting';
     this.reliable = true;
   }
 

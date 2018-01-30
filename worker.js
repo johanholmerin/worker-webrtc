@@ -4,6 +4,7 @@ import RTCSessionDescription from './src/worker/RTCSessionDescription.js';
 import RTCIceCandidate from './src/worker/RTCIceCandidate.js';
 import RTCCertificate from './src/worker/RTCCertificate.js';
 import RTCPeerConnectionIceEvent from './src/worker/RTCPeerConnectionIceEvent.js';
+import RTCStatsReport from './src/worker/RTCStatsReport.js';
 import { addListener, setPort } from './src/utils/com.js';
 
 function init(port) {
@@ -14,7 +15,8 @@ function init(port) {
     RTCSessionDescription,
     RTCIceCandidate,
     RTCCertificate,
-    RTCPeerConnectionIceEvent
+    RTCPeerConnectionIceEvent,
+    RTCStatsReport
   });
   if (isShared) port.start();
 }
@@ -33,5 +35,6 @@ export {
   RTCIceCandidate,
   RTCCertificate,
   RTCPeerConnectionIceEvent,
+  RTCStatsReport,
   init as addListener
 };

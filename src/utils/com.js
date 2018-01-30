@@ -1,6 +1,6 @@
 import getId from './id.js';
 import * as rpc from './rpc.js';
-import * as check from './check.js';
+import * as is from './is.js';
 
 export const references = {};
 
@@ -52,7 +52,7 @@ function post({ obj, msg, command }) {
 }
 
 export function call(obj, msg) {
-  if (check.string(obj)) {
+  if (is.string(obj)) {
     return rpc.send({ id: obj, msg, command: 'CALL' }, port);
   }
 
@@ -75,7 +75,7 @@ export function serialize(cls, ...args) {
 export function deserialize(obj, wrtc) {
   for (const key in obj) {
     const item = obj[key];
-    if (item && check.object(item)) {
+    if (item && is.object(item)) {
       if ('_type' in item) {
         const cls = wrtc[item._type] || self[item._type];
         const args = deserialize(item.args, wrtc);
@@ -95,15 +95,16 @@ export const functions = {
     addReference(obj, scope, id);
   },
   CALL(data, id, scope, wrtc) {
-    const obj = check.string(id) ? wrtc[id] : getObjFromId(id);
+    const obj = is.string(id) ? wrtc[id] : getObjFromId(id);
+    const args = deserialize(data.args, wrtc);
 
     // XXX add reference to scope when calling static methods
-    if (check.string(id)) {
-      data.args.push(scope);
+    if (is.string(id)) {
+      args.push(scope);
     }
 
     if (typeof obj[data.name] === 'function') {
-      return obj[data.name](...deserialize(data.args, wrtc));
+      return obj[data.name](...args);
     }
   },
   SET(data, id, scope, wrtc) {

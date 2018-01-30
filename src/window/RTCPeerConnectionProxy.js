@@ -35,12 +35,6 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
           })]
         });
       },
-      onpeeridentity(event) {
-        call(self, {
-          name: 'onpeeridentity',
-          args: [serialize(event, event.type)]
-        });
-      },
       ondatachannel(event) {
         const { channel } = event;
         const { scope } = getRef(self);
@@ -142,7 +136,13 @@ export default class RTCPeerConnectionProxy extends RTCPeerConnection {
 
   getStats() {
     return super.getStats().then(stats => {
-      return Array.from(stats.values());
+      const { scope } = getRef(this);
+      addReference(stats, scope);
+      construct(stats, {
+        name: 'RTCStatsReport',
+        args: [Array.from(stats)]
+      });
+      return getRefId(stats);
     });
   }
 
