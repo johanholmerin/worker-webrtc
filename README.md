@@ -1,5 +1,7 @@
 # Worker WebRTC Polyfill
 
+Makes it possible to use WebRTC in Workers. Aims to be specification compliant.
+
 ## Installation
 
 ```shell
