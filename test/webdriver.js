@@ -12,6 +12,9 @@ function getDriver(name) {
   options.setLoggingPrefs(prefs);
   if (typeof options.addArguments === 'function') {
     options.addArguments('--headless');
+    if (name === 'chrome') {
+      options.addArguments('--no-sandbox');
+    }
   }
 
   return builder
