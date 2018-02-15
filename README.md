@@ -5,12 +5,6 @@
 
 Makes it possible to use WebRTC in Workers. Aims to be specification compliant.
 
-## Installation
-
-```shell
-npm install worker-webrtc
-```
-
 ## Usage
 
 ```javascript
