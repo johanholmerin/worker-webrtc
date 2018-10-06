@@ -3,7 +3,7 @@
 [travis-image]: https://travis-ci.org/johanholmerin/worker-webrtc.svg?branch=master
 [travis-url]: https://travis-ci.org/johanholmerin/worker-webrtc
 
-Makes it possible to use WebRTC in Workers. Aims to be specification compliant.
+Makes it possible to use WebRTC in Workers.
 
 ## Usage
 
