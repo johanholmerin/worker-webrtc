@@ -8,7 +8,7 @@ Makes it possible to use WebRTC in Workers.
 ## Install
 
 ```sh
-yarn add git+https://github.com/johanholmerin/worker-webrtc#semver:^0.1.0
+yarn add git+https://github.com/johanholmerin/worker-webrtc#semver:^0.1.1
 ```
 
 ## Usage
