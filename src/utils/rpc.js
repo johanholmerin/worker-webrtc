@@ -10,6 +10,8 @@ export function onmessage(event, wrtc) {
     event.data.command === 'RPC_CALLBACK'
   )) return;
 
+  event.stopImmediatePropagation();
+
   const { success, msg, rpcId } = event.data;
   const value = deserialize([msg], wrtc)[0];
 

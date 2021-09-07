@@ -134,6 +134,8 @@ export function addListener(scope, wrtc) {
       return;
     }
 
+    event.stopImmediatePropagation();
+
     const { rpcId, command, msg, id } = event.data;
 
     resolveFunction(() =>
